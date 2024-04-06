@@ -12,20 +12,31 @@ type Cancellable struct {
 	ctx    context.Context
 	cancel context.CancelCauseFunc
 	errg   *errgroup.Group
-	// health health.Health
 }
 
-func NewCancellable(ctx context.Context) Context {
+func Background() Context {
+	return NewCancellable(context.Background())
+}
+
+func NewCancellable(ctx context.Context, opts ...OptionFunc) Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	ctx, cancel := context.WithCancelCause(ctx)
 	errg, ctx := errgroup.WithContext(ctx)
-	// health := health.NewCore(logmgr.Named("Health"))
 
-	return &Cancellable{
+	var out Context
+	out = &Cancellable{
 		ctx:    ctx,
 		cancel: cancel,
 		errg:   errg,
-		// health: health,
 	}
+
+	for _, opt := range opts {
+		out = opt(out)
+	}
+
+	return out
 }
 
 func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context {
@@ -39,10 +50,6 @@ func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.Ca
 func (c *Cancellable) ReplaceContext(cb func(context.Context) context.Context) {
 	c.ctx = cb(c.ctx)
 }
-
-// func (c *Cancellable) Health() health.Health {
-// 	return c.health
-// }
 
 // Cancel calls the context.CancelFunc.
 // A CancelFunc tells an operation to abandon its work.
