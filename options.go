@@ -34,3 +34,14 @@ func WithSignalCancelOption(signals ...os.Signal) OptionFunc {
 		return rootCtx
 	}
 }
+
+func WithValues(args []ContextKV) OptionFunc {
+	return func(ctx Context) Context {
+		if valCtx, ok := ctx.(ContextValueStore); ok {
+			for _, arg := range args {
+				valCtx.AddValue(arg.Key, arg.Value)
+			}
+		}
+		return ctx
+	}
+}

@@ -2,6 +2,7 @@ package contextual
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"golang.org/x/sync/errgroup"
@@ -12,6 +13,7 @@ type Cancellable struct {
 	ctx    context.Context
 	cancel context.CancelCauseFunc
 	errg   *errgroup.Group
+	values sync.Map
 }
 
 func Background() Context {
