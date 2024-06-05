@@ -14,6 +14,7 @@ type Context interface {
 	Wait() error
 	// Health() health.Health
 	ReplaceContext(cb func(context.Context) context.Context)
+	AsContext() context.Context
 }
 
 type ContextValueStore interface {

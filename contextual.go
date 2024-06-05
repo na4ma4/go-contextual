@@ -53,6 +53,11 @@ func (c *Cancellable) ReplaceContext(cb func(context.Context) context.Context) {
 	c.ctx = cb(c.ctx)
 }
 
+// AsContext returns the contextual.Context as context.Context.
+func (c *Cancellable) AsContext() context.Context {
+	return c
+}
+
 // Cancel calls the context.CancelFunc.
 // A CancelFunc tells an operation to abandon its work.
 // A CancelFunc does not wait for the work to stop.
