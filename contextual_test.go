@@ -28,7 +28,7 @@ func TestBackground(t *testing.T) {
 }
 
 func TestAllowNilNewCancellable(t *testing.T) {
-	ctx := contextual.NewCancellable(nil)
+	ctx := contextual.NewCancellable(nil) //nolint:staticcheck // testing bad juju.
 	if ctx == nil {
 		t.Fatal("context should return valid text")
 	}
@@ -54,7 +54,7 @@ func TestReplaceContext(t *testing.T) {
 	defer ctx.Cancel()
 
 	newCtx, cancel := context.WithCancel(context.Background())
-	ctx.ReplaceContext(func(ctx context.Context) context.Context {
+	ctx.ReplaceContext(func(_ context.Context) context.Context {
 		return newCtx
 	})
 	defer cancel()
