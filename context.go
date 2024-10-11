@@ -29,7 +29,3 @@ type ContextValueStore interface {
 	GetString(key any) string
 	GetInt(key any) int
 }
-
-type ContextDebugLabels interface {
-	SetLabels(l Labels)
-}
