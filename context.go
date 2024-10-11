@@ -17,6 +17,11 @@ type Context interface {
 	AsContext() context.Context
 }
 
+type ContextConditionalRunner interface {
+	SetContextKey(key ContextKeyBool, value bool)
+	RunIf(key ContextKeyBool, f func())
+}
+
 type ContextValueStore interface {
 	AddValue(key any, value any)
 	GetE(key any) (any, bool)

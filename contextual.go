@@ -20,7 +20,7 @@ func Background() Context {
 	return NewCancellable(context.Background())
 }
 
-func NewCancellable(ctx context.Context, opts ...OptionFunc) Context {
+func NewCancellable(ctx context.Context, opts ...OptionFunc) *Cancellable {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -38,7 +38,7 @@ func NewCancellable(ctx context.Context, opts ...OptionFunc) Context {
 		out = opt(out)
 	}
 
-	return out
+	return out.(*Cancellable)
 }
 
 func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context {

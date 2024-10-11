@@ -1,13 +1,25 @@
 package contextual
 
 import (
+	"context"
 	"os"
 	"os/signal"
+	"runtime/pprof"
 	"syscall"
 	"time"
 )
 
 type OptionFunc func(Context) Context
+
+func WithPProfLabels(labelSet pprof.LabelSet) OptionFunc {
+	return func(ctx Context) Context {
+		ctx.ReplaceContext(func(ctx context.Context) context.Context {
+			return pprof.WithLabels(ctx, labelSet)
+		})
+
+		return ctx
+	}
+}
 
 func WithTimeoutOption(timeout time.Duration) OptionFunc {
 	return func(ctx Context) Context {
