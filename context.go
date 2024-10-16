@@ -29,3 +29,7 @@ type ContextValueStore interface {
 	GetString(key any) string
 	GetInt(key any) int
 }
+
+func New(ctx context.Context, opts ...OptionFunc) Context {
+	return NewCancellable(ctx, opts...)
+}
