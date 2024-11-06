@@ -2,6 +2,7 @@ package contextual
 
 import (
 	"context"
+	"runtime/pprof"
 	"sync"
 	"time"
 
@@ -127,4 +128,23 @@ func (c *Cancellable) Err() error {
 // the same key returns the same result.
 func (c *Cancellable) Value(key any) any {
 	return c.ctx.Value(key)
+}
+
+// Go calls the given function in a new goroutine.
+//
+// The first call to return a non-nil error cancels the group; its error will be
+// returned by Wait.
+func (c *Cancellable) GoLabelled(labelSet pprof.LabelSet, f func() error) {
+	c.errg.Go(
+		func() error {
+			errChan := make(chan error)
+			defer close(errChan)
+
+			go pprof.Do(c.ctx, labelSet, func(_ context.Context) {
+				errChan <- f()
+			})
+
+			return <-errChan
+		},
+	)
 }
