@@ -2,6 +2,7 @@ package contextual
 
 import (
 	"context"
+	"runtime/pprof"
 )
 
 type Context interface {
@@ -11,6 +12,7 @@ type Context interface {
 	CancelWithCause(err error)
 	CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context
 	Go(f func() error)
+	GoLabelled(labelSet pprof.LabelSet, f func() error)
 	Wait() error
 	// Health() health.Health
 	ReplaceContext(cb func(context.Context) context.Context)
