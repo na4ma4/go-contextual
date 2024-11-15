@@ -19,6 +19,11 @@ type Context interface {
 	AsContext() context.Context
 }
 
+type ContextCancelMod interface {
+	PushCancelCauseFunc(f context.CancelCauseFunc)
+	PushCancelFunc(f context.CancelFunc)
+}
+
 type ContextConditionalRunner interface {
 	SetContextKey(key ContextKeyBool, value bool)
 	RunIf(key ContextKeyBool, f func())

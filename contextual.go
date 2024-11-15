@@ -39,7 +39,27 @@ func NewCancellable(ctx context.Context, opts ...OptionFunc) *Cancellable {
 		out = opt(out)
 	}
 
-	return out.(*Cancellable)
+	if v, ok := out.(*Cancellable); ok {
+		return v
+	}
+
+	panic("should not be possible to not cast to Cancellable")
+}
+
+func (c *Cancellable) PushCancelFunc(f context.CancelFunc) {
+	cancel := c.cancel
+	c.cancel = func(cause error) {
+		f()
+		cancel(cause)
+	}
+}
+
+func (c *Cancellable) PushCancelCauseFunc(f context.CancelCauseFunc) {
+	cancel := c.cancel
+	c.cancel = func(cause error) {
+		f(cause)
+		cancel(cause)
+	}
 }
 
 func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context {

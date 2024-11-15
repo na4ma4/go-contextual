@@ -57,3 +57,23 @@ func WithValues(args []ContextKV) OptionFunc {
 		return ctx
 	}
 }
+
+func WithCustomCancelCauseFunc(f context.CancelCauseFunc) OptionFunc {
+	return func(ctx Context) Context {
+		if valCtx, ok := ctx.(ContextCancelMod); ok {
+			valCtx.PushCancelCauseFunc(f)
+		}
+
+		return ctx
+	}
+}
+
+func WithCustomCancelFunc(f context.CancelFunc) OptionFunc {
+	return func(ctx Context) Context {
+		if valCtx, ok := ctx.(ContextCancelMod); ok {
+			valCtx.PushCancelFunc(f)
+		}
+
+		return ctx
+	}
+}

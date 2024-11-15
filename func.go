@@ -50,7 +50,7 @@ func WithDeadlineCause(parent context.Context, d time.Time, cause error) (Contex
 	if parentIsCtxl, ok := parent.(Context); ok {
 		outCtx = parentIsCtxl.CloneWithNewContext(rootCtx, CancelCauseWrap(cancel))
 	} else {
-		outCtx = NewCancellable(rootCtx)
+		outCtx = NewCancellable(rootCtx, WithCustomCancelFunc(cancel))
 	}
 
 	return outCtx, outCtx.Cancel
