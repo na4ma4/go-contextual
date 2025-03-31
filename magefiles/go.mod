@@ -1,10 +1,10 @@
 module github.com/na4ma4/go-contextual/magefiles
 
 go 1.22.2
-toolchain go1.23.7
+toolchain go1.24.1
 
 require (
-	github.com/dosquad/mage v0.2.5
+	github.com/dosquad/mage v0.3.1
 	github.com/magefile/mage v1.15.0
 )
 
