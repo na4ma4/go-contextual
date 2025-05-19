@@ -83,7 +83,7 @@ func WithCancelCause(ctx Context) (Context, context.CancelCauseFunc) {
 	return rootCtx, rootCtx.CancelWithCause
 }
 
-// NotifyContext returns a copy of the parent context that is marked done
+// WithSignalCancel returns a copy of the parent context that is marked done
 // (its Done channel is closed) when one of the listed signals arrives,
 // when the returned stop function is called, or when the parent context's
 // Done channel is closed, whichever happens first.

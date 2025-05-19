@@ -150,7 +150,8 @@ func (c *Cancellable) Value(key any) any {
 	return c.ctx.Value(key)
 }
 
-// Go calls the given function in a new goroutine.
+// GoLabelled calls the given function in a new goroutine, using pprof labelsets for
+// improved debugging and profiling.
 //
 // The first call to return a non-nil error cancels the group; its error will be
 // returned by Wait.
