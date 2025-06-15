@@ -13,7 +13,7 @@ func TestContextWithDeadlineCause(t *testing.T) {
 	testError := errors.New("test error for deadline")
 
 	{ // deadline exceeded
-		ctx, _ := contextual.WithDeadlineCause(context.Background(), time.Now().Add(time.Millisecond), testError)
+		ctx, _ := contextual.WithDeadlineCause(t.Context(), time.Now().Add(time.Millisecond), testError)
 		<-ctx.Done()
 		if v := context.Cause(ctx); !errors.Is(v, testError) {
 			t.Errorf("WithDeadlineCause(): err got '%s', want '%s'", v, testError)
@@ -21,7 +21,7 @@ func TestContextWithDeadlineCause(t *testing.T) {
 	}
 
 	{ // returned cancel called
-		ctx, cancel := contextual.WithDeadlineCause(context.Background(), time.Now().Add(time.Second), testError)
+		ctx, cancel := contextual.WithDeadlineCause(t.Context(), time.Now().Add(time.Second), testError)
 		cancel()
 		<-ctx.Done()
 		if v := context.Cause(ctx); !errors.Is(v, context.Canceled) {
@@ -30,7 +30,7 @@ func TestContextWithDeadlineCause(t *testing.T) {
 	}
 
 	{ // contextual cancel called
-		ctx, _ := contextual.WithDeadlineCause(context.Background(), time.Now().Add(time.Second), testError)
+		ctx, _ := contextual.WithDeadlineCause(t.Context(), time.Now().Add(time.Second), testError)
 		ctx.Cancel()
 		<-ctx.Done()
 		if v := context.Cause(ctx); !errors.Is(v, context.Canceled) {
@@ -39,7 +39,7 @@ func TestContextWithDeadlineCause(t *testing.T) {
 	}
 
 	{ // parent context cancel called
-		rootCtx, cancel := context.WithCancel(context.Background())
+		rootCtx, cancel := context.WithCancel(t.Context())
 		ctx, _ := contextual.WithDeadlineCause(rootCtx, time.Now().Add(time.Second), testError)
 		cancel()
 		<-ctx.Done()
@@ -51,7 +51,7 @@ func TestContextWithDeadlineCause(t *testing.T) {
 
 func TestContextWithTimeout(t *testing.T) {
 	t.Run("timeout_exceeded", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		ctx, cancel := contextual.WithTimeout(parent, 1*time.Millisecond)
@@ -68,7 +68,7 @@ func TestContextWithTimeout(t *testing.T) {
 	})
 
 	t.Run("cancel_func_called", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		ctx, cancel := contextual.WithTimeout(parent, 1*time.Second)
@@ -85,7 +85,7 @@ func TestContextWithTimeout(t *testing.T) {
 	})
 
 	t.Run("parent_cancel_called", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 
 		ctx, cancel := contextual.WithTimeout(parent, 1*time.Second)
 		defer cancel()
@@ -106,7 +106,7 @@ func TestContextWithTimeoutCause(t *testing.T) {
 	testError := errors.New("test error for timeout")
 
 	t.Run("timeout_exceeded_with_cause", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		ctx, cancel := contextual.WithTimeoutCause(parent, 1*time.Millisecond, testError)
@@ -122,7 +122,7 @@ func TestContextWithTimeoutCause(t *testing.T) {
 	})
 
 	t.Run("cancel_func_called", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		ctx, cancel := contextual.WithTimeoutCause(parent, 1*time.Second, testError)
@@ -142,7 +142,7 @@ func TestContextWithTimeoutCause(t *testing.T) {
 func TestContextWithDeadline(t *testing.T) {
 	// This will be similar to WithTimeout but using a specific time
 	t.Run("deadline_exceeded", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		ctx, cancel := contextual.WithDeadline(parent, time.Now().Add(1*time.Millisecond))
@@ -155,9 +155,8 @@ func TestContextWithDeadline(t *testing.T) {
 	})
 }
 
-
 func TestContextWithCancel(t *testing.T) {
-	parent := contextual.New(context.Background())
+	parent := contextual.New(t.Context())
 	defer parent.Cancel()
 
 	ctx, cancel := contextual.WithCancel(parent)
@@ -181,7 +180,7 @@ func TestContextWithCancel(t *testing.T) {
 	}
 
 	// Test that parent cancellation also cancels child
-	parent2 := contextual.New(context.Background())
+	parent2 := contextual.New(t.Context())
 	ctx2, cancel2 := contextual.WithCancel(parent2)
 	defer cancel2()
 
@@ -198,7 +197,7 @@ func TestContextWithCancel(t *testing.T) {
 
 func TestContextualFunctionWithCancelCause(t *testing.T) {
 	// Test for contextual.WithCancelCause (the function)
-	parent := contextual.New(context.Background())
+	parent := contextual.New(t.Context())
 	defer parent.Cancel()
 
 	testErr := errors.New("custom cancel cause")
@@ -223,7 +222,7 @@ func TestContextualFunctionWithCancelCause(t *testing.T) {
 	}
 
 	// Test with nil cause
-	parent3 := contextual.New(context.Background())
+	parent3 := contextual.New(t.Context())
 	defer parent3.Cancel()
 	ctx3, cancel3 := contextual.WithCancelCause(parent3)
 	cancel3(nil) // Cancel with nil error
@@ -236,7 +235,7 @@ func TestContextualFunctionWithCancelCause(t *testing.T) {
 func TestContextWithSignalCancel(t *testing.T) {
 	// Direct signal testing is hard. We test cancellation via stop func and parent.
 	t.Run("stop_function_cancels", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		defer parent.Cancel()
 
 		// Pass a specific signal to avoid relying on default SIGINT/SIGTERM which might interfere with test runners
@@ -258,7 +257,7 @@ func TestContextWithSignalCancel(t *testing.T) {
 				t.Errorf("WithSignalCancel() error after stop = %v, want %v", ctx.Err(), context.Canceled)
 			}
 			if cause := context.Cause(ctx.AsContext()); !errors.Is(cause, context.Canceled) {
-				 t.Errorf("WithSignalCancel() cause after stop = %v, want %v", cause, context.Canceled)
+				t.Errorf("WithSignalCancel() cause after stop = %v, want %v", cause, context.Canceled)
 			}
 		case <-time.After(1 * time.Second):
 			t.Error("WithSignalCancel() context did not cancel after stop() call")
@@ -266,7 +265,7 @@ func TestContextWithSignalCancel(t *testing.T) {
 	})
 
 	t.Run("parent_cancel_cancels_signal_context", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		// No defer parent.Cancel() here, we do it manually
 
 		// Calling without specific signals to use the default ones.

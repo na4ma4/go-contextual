@@ -3,9 +3,9 @@ package contextual_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"runtime/pprof"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -15,7 +15,7 @@ import (
 var errTest = errors.New("test error")
 
 func TestGo_FuncErr(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	var executed bool
@@ -31,7 +31,7 @@ func TestGo_FuncErr(t *testing.T) {
 		t.Error("FuncErr was not executed")
 	}
 
-	ctxError := contextual.New(context.Background())
+	ctxError := contextual.New(t.Context())
 	defer ctxError.Cancel()
 	contextual.Go(ctxError, contextual.FuncErr(func() error {
 		return errTest
@@ -43,13 +43,14 @@ func TestGo_FuncErr(t *testing.T) {
 }
 
 func TestGo_CtxErrFunc(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	var executed bool
 	var receivedCtx context.Context
 	contextual.Go(ctx, contextual.CtxErrFunc(func(c context.Context) error {
 		executed = true
+		//nolint:fatcontext // Testing context being received.
 		receivedCtx = c
 		return nil
 	}))
@@ -64,9 +65,9 @@ func TestGo_CtxErrFunc(t *testing.T) {
 		t.Error("CtxErrFunc did not receive context")
 	}
 
-	ctxError := contextual.New(context.Background())
+	ctxError := contextual.New(t.Context())
 	defer ctxError.Cancel()
-	contextual.Go(ctxError, contextual.CtxErrFunc(func(c context.Context) error {
+	contextual.Go(ctxError, contextual.CtxErrFunc(func(_ context.Context) error {
 		return errTest
 	}))
 
@@ -76,7 +77,7 @@ func TestGo_CtxErrFunc(t *testing.T) {
 }
 
 func TestGo_CtxualErrFunc(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	var executed bool
@@ -100,9 +101,9 @@ func TestGo_CtxualErrFunc(t *testing.T) {
 		t.Error("CtxualErrFunc did not receive contextual.Context")
 	}
 
-	ctxError := contextual.New(context.Background())
+	ctxError := contextual.New(t.Context())
 	defer ctxError.Cancel()
-	contextual.Go(ctxError, contextual.CtxualErrFunc(func(c contextual.Context) error {
+	contextual.Go(ctxError, contextual.CtxualErrFunc(func(_ contextual.Context) error {
 		return errTest
 	}))
 
@@ -112,7 +113,7 @@ func TestGo_CtxualErrFunc(t *testing.T) {
 }
 
 func TestGo_Cancellation(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -140,7 +141,7 @@ func TestGo_Cancellation(t *testing.T) {
 }
 
 func TestGoLabelled(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	var executed bool
@@ -156,7 +157,7 @@ func TestGoLabelled(t *testing.T) {
 		t.Error("GoLabelled FuncErr was not executed")
 	}
 
-	ctxError := contextual.New(context.Background())
+	ctxError := contextual.New(t.Context())
 	defer ctxError.Cancel()
 	contextual.GoLabelled(ctxError, "testjobErr", "testdescErr", contextual.FuncErr(func() error {
 		return errTest
@@ -166,16 +167,21 @@ func TestGoLabelled(t *testing.T) {
 		t.Errorf("Wait() error = %v, want %v", err, errTest)
 	}
 
-	ctxCtxual := contextual.New(context.Background())
+	ctxCtxual := contextual.New(t.Context())
 	defer ctxCtxual.Cancel()
 	var executedCtxual bool
-	contextual.GoLabelled(ctxCtxual, "testjobCtxual", "testdescCtxual", contextual.CtxualErrFunc(func(c contextual.Context) error {
-		if c == nil {
-			return fmt.Errorf("context in GoLabelled was nil")
-		}
-		executedCtxual = true
-		return nil
-	}))
+	contextual.GoLabelled(
+		ctxCtxual, "testjobCtxual", "testdescCtxual",
+		contextual.CtxualErrFunc(
+			func(c contextual.Context) error {
+				if c == nil {
+					return errors.New("context in GoLabelled was nil")
+				}
+				executedCtxual = true
+				return nil
+			},
+		),
+	)
 	if err := ctxCtxual.Wait(); err != nil {
 		t.Errorf("Wait() error for CtxualErrFunc in GoLabelled = %v, want nil", err)
 	}
@@ -185,19 +191,20 @@ func TestGoLabelled(t *testing.T) {
 }
 
 func TestGo_MultipleGoroutines(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	numGoroutines := 5
-	var executedCount int32 // Using int32 for atomic, though not using atomic here for tool simplicity
+	var executedCount atomic.Int32 // Using int32 for atomic, though not using atomic here for tool simplicity
 	var wg sync.WaitGroup
 	wg.Add(numGoroutines)
 
-	for i := 0; i < numGoroutines; i++ {
+	for i := range numGoroutines {
+		t.Logf("Starting goroutine %d", i)
 		contextual.Go(ctx, contextual.FuncErr(func() error {
 			// In a real test, use atomic.AddInt32(&executedCount, 1)
 			func() { // Simulating work and avoiding data race for executedCount for this test
-				executedCount++
+				executedCount.Add(1)
 				wg.Done()
 			}()
 			time.Sleep(10 * time.Millisecond)
@@ -211,14 +218,13 @@ func TestGo_MultipleGoroutines(t *testing.T) {
 	}
 	wg.Wait() // Ensure all goroutines have at least run their increment logic
 
-	if executedCount != int32(numGoroutines) {
-		t.Errorf("Expected %d goroutines to execute, but got %d", numGoroutines, executedCount)
+	if executedCount.Load() != int32(numGoroutines) {
+		t.Errorf("Expected %d goroutines to execute, but got %d", numGoroutines, executedCount.Load())
 	}
 }
 
-
 func TestGo_ErrorCancelsOthers(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 
 	errEarly := errors.New("early error")
 	var slowTaskStarted bool
@@ -255,7 +261,7 @@ func TestGo_ErrorCancelsOthers(t *testing.T) {
 func TestGo_CtxualErrFunc_WithValueAccess(t *testing.T) {
 	type key string
 	const myKey key = "testKey"
-	ctx := contextual.New(context.Background(), contextual.WithValues([]contextual.ContextKV{{Key: myKey, Value: "testValue"}}))
+	ctx := contextual.New(t.Context(), contextual.WithValues([]contextual.ContextKV{{Key: myKey, Value: "testValue"}}))
 	defer ctx.Cancel()
 
 	var foundValue string
@@ -279,7 +285,7 @@ func TestGo_CtxualErrFunc_WithValueAccess(t *testing.T) {
 }
 
 func TestGo_NilFunc(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	t.Run("Go_FuncErr_nil", func(t *testing.T) {
@@ -292,7 +298,7 @@ func TestGo_NilFunc(t *testing.T) {
 		ctx.Wait()
 	})
 
-	ctx = contextual.New(context.Background()) // Re-init ctx for isolation
+	ctx = contextual.New(t.Context()) // Re-init ctx for isolation
 	defer ctx.Cancel()
 	t.Run("Go_CtxErrFunc_nil", func(t *testing.T) {
 		defer func() {
@@ -304,7 +310,7 @@ func TestGo_NilFunc(t *testing.T) {
 		ctx.Wait()
 	})
 
-	ctx = contextual.New(context.Background()) // Re-init ctx
+	ctx = contextual.New(t.Context()) // Re-init ctx
 	defer ctx.Cancel()
 	t.Run("Go_CtxualErrFunc_nil", func(t *testing.T) {
 		defer func() {
@@ -316,7 +322,7 @@ func TestGo_NilFunc(t *testing.T) {
 		ctx.Wait()
 	})
 
-	ctx = contextual.New(context.Background()) // Re-init ctx
+	ctx = contextual.New(t.Context()) // Re-init ctx
 	defer ctx.Cancel()
 	t.Run("GoLabelled_FuncErr_nil", func(t *testing.T) {
 		defer func() {
@@ -332,7 +338,7 @@ func TestGo_NilFunc(t *testing.T) {
 func TestGo_CtxErrFunc_ContextPropagation(t *testing.T) {
 	type key string
 	const baseKey key = "baseKey"
-	base := context.WithValue(context.Background(), baseKey, "baseValue")
+	base := context.WithValue(t.Context(), baseKey, "baseValue")
 	ctx := contextual.New(base)
 	defer ctx.Cancel()
 
@@ -374,7 +380,7 @@ func TestGo_CtxualErrFunc_ContextPropagation(t *testing.T) {
 	const myKey key = "myKey"
 	const myValue string = "myValue"
 
-	ctx := contextual.New(context.Background(), contextual.WithValues([]contextual.ContextKV{{Key:myKey, Value: myValue}}))
+	ctx := contextual.New(t.Context(), contextual.WithValues([]contextual.ContextKV{{Key: myKey, Value: myValue}}))
 	defer ctx.Cancel()
 
 	var foundVal string
@@ -414,7 +420,7 @@ func TestGo_CtxualErrFunc_ContextPropagation(t *testing.T) {
 func TestGoLabelled_CtxErrFunc_ContextPropagation(t *testing.T) {
 	type key string
 	const baseKey key = "baseKey"
-	base := context.WithValue(context.Background(), baseKey, "baseValue")
+	base := context.WithValue(t.Context(), baseKey, "baseValue")
 	ctx := contextual.New(base)
 	defer ctx.Cancel()
 
@@ -456,7 +462,7 @@ func TestGoLabelled_CtxualErrFunc_ContextPropagation(t *testing.T) {
 	const myKey key = "myKey"
 	const myValue string = "myValue"
 
-	ctx := contextual.New(context.Background(), contextual.WithValues([]contextual.ContextKV{{Key:myKey, Value: myValue}}))
+	ctx := contextual.New(t.Context(), contextual.WithValues([]contextual.ContextKV{{Key: myKey, Value: myValue}}))
 	defer ctx.Cancel()
 
 	var foundVal string
@@ -494,7 +500,7 @@ func TestGoLabelled_CtxualErrFunc_ContextPropagation(t *testing.T) {
 }
 
 func TestGoDirectlyOnContext(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	var executed bool
@@ -510,7 +516,7 @@ func TestGoDirectlyOnContext(t *testing.T) {
 		t.Error("ctx.Go() was not executed")
 	}
 
-	ctxError := contextual.New(context.Background())
+	ctxError := contextual.New(t.Context())
 	defer ctxError.Cancel()
 	ctxError.Go(func() error {
 		return errTest
@@ -520,7 +526,7 @@ func TestGoDirectlyOnContext(t *testing.T) {
 		t.Errorf("ctx.Go().Wait() error = %v, want %v", err, errTest)
 	}
 
-	ctxLabelled := contextual.New(context.Background())
+	ctxLabelled := contextual.New(t.Context())
 	defer ctxLabelled.Cancel()
 
 	var executedLabelled bool

@@ -37,7 +37,7 @@ type errgroupFuncs interface {
 // It handles the different function signatures accepted by Go and GoLabelled.
 // If f is nil (any typed nil like (FuncErr)(nil)), it returns nil.
 func dispatchGoFunc[T errgroupFuncs](ctx Context, f T) func() error {
-	if any(f) == nil {
+	if f == nil {
 		return nil // The underlying Group.Go() methods or Context.GoLabelled handle nil properly (panic).
 	}
 	switch fn := any(f).(type) {
@@ -87,9 +87,9 @@ func CommonLabels(name, description string) pprof.LabelSet {
 }
 
 // Labels is a convenience wrapper around `pprof.Labels`.
+// Example: Labels("key1", "value1", "key2", "value2")
 // It takes a variadic list of strings `args` (key-value pairs) and returns a pprof.LabelSet.
 // This allows for creating custom label sets with more or different labels than CommonLabels.
-// Example: Labels("key1", "value1", "key2", "value2")
 func Labels(args ...string) pprof.LabelSet {
 	return pprof.Labels(args...)
 }

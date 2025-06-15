@@ -2,8 +2,8 @@ package contextual_test
 
 import (
 	"context"
-	"errors" // Added import for errors
-	"fmt"    // Added import for fmt.Sprintf
+	"errors"
+	"strconv"
 	"testing"
 	"time"
 
@@ -30,7 +30,7 @@ func TestBackground(t *testing.T) {
 }
 
 func TestContextCancelWithCauseMethod(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	// No defer ctx.Cancel() here, we are testing specific cancel with cause
 
 	testErr := errors.New("specific cancellation cause")
@@ -50,7 +50,7 @@ func TestContextCancelWithCauseMethod(t *testing.T) {
 	}
 
 	// Test that cause is not overwritten
-	ctx2 := contextual.New(context.Background())
+	ctx2 := contextual.New(t.Context())
 	initialErrorInstance := errors.New("initial cause")
 	subsequentErrorInstance := errors.New("subsequent cause attempt")
 
@@ -83,7 +83,7 @@ func TestContextCloneWithNewContext(t *testing.T) {
 	const ck cloneKey = "cloneTestKey"
 	parentValue := "parentValue"
 
-	originalCtx := contextual.New(context.Background())
+	originalCtx := contextual.New(t.Context())
 	defer originalCtx.Cancel()
 
 	if valStore, ok := originalCtx.(contextual.ContextValueStore); ok {
@@ -94,7 +94,7 @@ func TestContextCloneWithNewContext(t *testing.T) {
 
 	// Create a new standard context to be the base for the clone
 	// Use WithCancelCause to get a CancelCauseFunc directly
-	newStdCtx, newStdCancelCause := context.WithCancelCause(context.Background())
+	newStdCtx, newStdCancelCause := context.WithCancelCause(t.Context())
 	defer newStdCancelCause(errors.New("deferred cancel for newStdCtx")) // Use an error for cause
 
 	// Clone the context
@@ -136,10 +136,10 @@ func TestContextCloneWithNewContext(t *testing.T) {
 
 	// 4. Test cancellation of the original parent context also cancels the cloned context
 	// Re-clone for a fresh cancellable instance, as newStdCtx is already cancelled.
-	originalCtx2 := contextual.New(context.Background())
+	originalCtx2 := contextual.New(t.Context())
 	defer originalCtx2.Cancel()
 
-	newStdCtx2, newStdCancelCause2 := context.WithCancelCause(context.Background())
+	newStdCtx2, newStdCancelCause2 := context.WithCancelCause(t.Context())
 	defer newStdCancelCause2(errors.New("deferred cancel for newStdCtx2"))
 	clonedCtx2 := originalCtx2.CloneWithNewContext(newStdCtx2, newStdCancelCause2)
 
@@ -163,11 +163,13 @@ func TestContextCloneWithNewContext(t *testing.T) {
 		// Let's assume `newStdCtx` is NOT a child of `originalCtx2.AsContext()` for this test.
 		// So, clonedCtx2 should NOT be done here.
 		if clonedCtx2.Err() != nil {
-             t.Errorf("Cloned context (clonedCtx2) was unexpectedly cancelled by originalCtx2.Cancel(): %v", clonedCtx2.Err())
-        }
+			t.Errorf("Cloned context (clonedCtx2) was unexpectedly cancelled by originalCtx2.Cancel(): %v",
+				clonedCtx2.Err())
+		}
 	case <-time.After(50 * time.Millisecond):
 		// This is the expected path if newStdCtx2 is independent of originalCtx2
-		t.Log("Cloned context (clonedCtx2) correctly not cancelled by originalCtx2.Cancel(), as its underlying context is newStdCtx2.")
+		t.Log("Cloned context (clonedCtx2) correctly not cancelled by originalCtx2.Cancel(), " +
+			"as its underlying context is newStdCtx2.")
 	}
 
 	// 5. Test if the cancel func returned by originalCtx.CloneWithNewContext can cancel the clone.
@@ -177,10 +179,10 @@ func TestContextCloneWithNewContext(t *testing.T) {
 	// The `originalCtx.Cancel` is for `originalCtx`.
 	// The `clonedCtx.Cancel` should trigger `newStdCancel`.
 
-	newStdCtx3, newStdCancelCause3 := context.WithCancelCause(context.Background())
+	newStdCtx3, newStdCancelCause3 := context.WithCancelCause(t.Context())
 	// No defer newStdCancelCause3, we'll use clonedCtx3.Cancel()
 
-	originalCtx3 := contextual.New(context.Background())
+	originalCtx3 := contextual.New(t.Context())
 	defer originalCtx3.Cancel()
 
 	clonedCtx3 := originalCtx3.CloneWithNewContext(newStdCtx3, newStdCancelCause3)
@@ -189,7 +191,8 @@ func TestContextCloneWithNewContext(t *testing.T) {
 	select {
 	case <-clonedCtx3.Done():
 		if !errors.Is(clonedCtx3.Err(), context.Canceled) {
-			t.Errorf("Cloned context (clonedCtx3) error after its Cancel() = %v, want %v", clonedCtx3.Err(), context.Canceled)
+			t.Errorf("Cloned context (clonedCtx3) error after its Cancel() = %v, want %v", clonedCtx3.Err(),
+				context.Canceled)
 		}
 	case <-time.After(1 * time.Second):
 		t.Error("Cloned context (clonedCtx3) did not cancel after its own Cancel() method was called")
@@ -197,7 +200,7 @@ func TestContextCloneWithNewContext(t *testing.T) {
 }
 
 func TestContextConditionalRunner(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	runner, ok := ctx.(contextual.ContextConditionalRunner)
@@ -207,8 +210,8 @@ func TestContextConditionalRunner(t *testing.T) {
 
 	type condKey contextual.ContextKeyBool
 	const (
-		runKeyTrue  condKey = "runKeyTrue"
-		runKeyFalse condKey = "runKeyFalse"
+		runKeyTrue   condKey = "runKeyTrue"
+		runKeyFalse  condKey = "runKeyFalse"
 		runKeyNotSet condKey = "runKeyNotSet"
 	)
 
@@ -258,7 +261,7 @@ func TestContextConditionalRunner(t *testing.T) {
 }
 
 func TestContextValueStore(t *testing.T) {
-	ctx := contextual.New(context.Background())
+	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
 	type storeKey string
@@ -318,7 +321,7 @@ func TestContextValueStore(t *testing.T) {
 
 	// GetString - existing int (should format)
 	sInt := valStore.GetString(keyInt)
-	expectedSInt := fmt.Sprintf("%v", myIntVal)
+	expectedSInt := strconv.Itoa(myIntVal)
 	if sInt != expectedSInt {
 		t.Errorf("GetString(%q) for int = %q, want %q", keyInt, sInt, expectedSInt)
 	}
@@ -394,7 +397,7 @@ func TestReplaceContext(t *testing.T) {
 	ctx := contextual.Background()
 	defer ctx.Cancel()
 
-	newCtx, cancel := context.WithCancel(context.Background())
+	newCtx, cancel := context.WithCancel(t.Context())
 	ctx.ReplaceContext(func(_ context.Context) context.Context {
 		return newCtx
 	})

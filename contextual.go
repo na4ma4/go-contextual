@@ -65,12 +65,19 @@ func (c *Cancellable) PushCancelCauseFunc(f context.CancelCauseFunc) {
 func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context {
 	// When cloning, we carry over the errgroup and the values map.
 	// The new context and its cancel func are specific to this clone.
-	return &Cancellable{
+	o := &Cancellable{
 		ctx:    ctx,
 		cancel: cancel,
 		errg:   c.errg,
-		values: c.values, // This makes the values map shared with the clone.
+		values: sync.Map{},
 	}
+
+	c.values.Range(func(key, value any) bool {
+		o.values.Store(key, value)
+		return true // continue iteration
+	})
+
+	return o
 }
 
 func (c *Cancellable) ReplaceContext(cb func(context.Context) context.Context) {

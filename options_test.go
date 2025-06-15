@@ -11,7 +11,7 @@ import (
 
 func TestContextOptionTimeout(t *testing.T) {
 	ctx := contextual.NewCancellable(
-		context.TODO(),
+		t.Context(),
 		contextual.WithTimeoutOption(50*time.Millisecond),
 	)
 	if err := ctx.Err(); err != nil {
@@ -26,7 +26,7 @@ func TestContextOptionTimeout(t *testing.T) {
 func TestContextOptionDeadline(t *testing.T) {
 	deadline := time.Now().Add(50 * time.Millisecond)
 	ctx := contextual.New( // Using New for variety, NewCancellable also fine
-		context.Background(),
+		t.Context(),
 		contextual.WithDeadlineOption(deadline),
 	)
 	defer ctx.Cancel() // Good practice, though timeout should hit first
@@ -56,7 +56,7 @@ func TestContextOptionWithValues(t *testing.T) {
 	val2 := 123
 
 	ctx := contextual.New(
-		context.Background(),
+		t.Context(),
 		contextual.WithValues([]contextual.ContextKV{
 			{Key: k1, Value: val1},
 			{Key: k2, Value: val2},
@@ -93,7 +93,7 @@ func TestContextOptionWithCustomCancelFunc(t *testing.T) {
 	}
 
 	ctx := contextual.New(
-		context.Background(),
+		t.Context(),
 		contextual.WithCustomCancelFunc(customFunc),
 	)
 
@@ -120,7 +120,7 @@ func TestContextOptionWithCustomCancelCauseFunc(t *testing.T) {
 	}
 
 	ctx := contextual.New(
-		context.Background(),
+		t.Context(),
 		contextual.WithCustomCancelCauseFunc(customFunc),
 	)
 
@@ -142,7 +142,7 @@ func TestContextOptionWithCustomCancelCauseFunc(t *testing.T) {
 	customCancelCalled = false
 	receivedCause = nil
 	ctx2 := contextual.New(
-		context.Background(),
+		t.Context(),
 		contextual.WithCustomCancelCauseFunc(customFunc),
 	)
 	ctx2.Cancel()
@@ -151,7 +151,8 @@ func TestContextOptionWithCustomCancelCauseFunc(t *testing.T) {
 		t.Error("WithCustomCancelCauseFunc (on regular Cancel): custom function was not called")
 	}
 	if !errors.Is(receivedCause, context.Canceled) { // Default cause for .Cancel()
-		t.Errorf("WithCustomCancelCauseFunc (on regular Cancel): custom function received cause %v, want %v", receivedCause, context.Canceled)
+		t.Errorf("WithCustomCancelCauseFunc (on regular Cancel): custom function received cause %v, want %v",
+			receivedCause, context.Canceled)
 	}
 }
 
@@ -159,7 +160,7 @@ func TestContextOptionWithPProfLabels(t *testing.T) {
 	// Basic test: does it create without error?
 	// Verifying actual label application is complex for unit tests.
 	ctx := contextual.New(
-		context.Background(),
+		t.Context(),
 		contextual.WithPProfLabels(contextual.Labels("key", "value")),
 	)
 	defer ctx.Cancel()
@@ -182,7 +183,7 @@ func TestContextOptionWithSignalCancel(t *testing.T) {
 	// and parent cancellation, not actual OS signals.
 	t.Run("option_self_cancel", func(t *testing.T) {
 		ctx := contextual.New(
-			context.Background(),
+			t.Context(),
 			contextual.WithSignalCancelOption(), // Use default signals
 		)
 
@@ -203,7 +204,7 @@ func TestContextOptionWithSignalCancel(t *testing.T) {
 	})
 
 	t.Run("option_parent_cancel", func(t *testing.T) {
-		parent := contextual.New(context.Background())
+		parent := contextual.New(t.Context())
 		// No defer parent.Cancel() here
 
 		ctx := contextual.New(
@@ -229,7 +230,7 @@ func TestContextOptionWithSignalCancel(t *testing.T) {
 }
 
 func TestContextCancel(t *testing.T) {
-	ctx := contextual.NewCancellable(context.TODO())
+	ctx := contextual.NewCancellable(t.Context())
 	if err := ctx.Err(); err != nil {
 		t.Errorf("ctx.Err(): immediate error : got '%s', want 'nil'", err)
 	}
