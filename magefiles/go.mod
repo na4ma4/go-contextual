@@ -1,8 +1,6 @@
 module github.com/na4ma4/go-contextual/magefiles
 
-go 1.23.0
-
-toolchain go1.24.0
+go 1.24.1
 
 require (
 	github.com/dosquad/mage v0.3.2
@@ -20,12 +18,12 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
-	github.com/na4ma4/go-permbits v0.5.2 // indirect
+	github.com/na4ma4/go-permbits v0.5.3 // indirect
 	github.com/princjef/mageutil v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
