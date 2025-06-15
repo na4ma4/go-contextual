@@ -7,7 +7,10 @@ func (c *Cancellable) SetContextKey(key ContextKeyBool, value bool) {
 }
 
 func (c *Cancellable) RunIf(key ContextKeyBool, f func()) {
-	if v, ok := c.Value(key).(bool); ok && v {
-		f()
+	// Use GetE to access values from c.values sync.Map, consistent with SetContextKey.
+	if v, found := c.GetE(key); found {
+		if boolVal, isBool := v.(bool); isBool && boolVal {
+			f()
+		}
 	}
 }

@@ -33,7 +33,7 @@ func (c *Cancellable) GetString(key any) string {
 			return s
 		}
 
-		return fmt.Sprintf("%s", v)
+		return fmt.Sprintf("%v", v) // Changed %s to %v for general value formatting
 	}
 
 	return ""

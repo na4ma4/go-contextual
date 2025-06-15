@@ -63,10 +63,13 @@ func (c *Cancellable) PushCancelCauseFunc(f context.CancelCauseFunc) {
 }
 
 func (c *Cancellable) CloneWithNewContext(ctx context.Context, cancel context.CancelCauseFunc) Context {
+	// When cloning, we carry over the errgroup and the values map.
+	// The new context and its cancel func are specific to this clone.
 	return &Cancellable{
 		ctx:    ctx,
 		cancel: cancel,
 		errg:   c.errg,
+		values: c.values, // This makes the values map shared with the clone.
 	}
 }
 
@@ -156,6 +159,12 @@ func (c *Cancellable) Value(key any) any {
 // The first call to return a non-nil error cancels the group; its error will be
 // returned by Wait.
 func (c *Cancellable) GoLabelled(labelSet pprof.LabelSet, f func() error) {
+	if f == nil {
+		// Match the panic behavior of errgroup.Group when a nil func is passed.
+		// errgroup itself would panic with "golang.org/x/sync/errgroup: Go called with nil func".
+		// We ensure a panic happens before further processing for consistency.
+		panic("contextual: GoLabelled called with nil function")
+	}
 	c.errg.Go(
 		func() error {
 			errChan := make(chan error)
