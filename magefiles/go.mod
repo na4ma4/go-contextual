@@ -10,7 +10,7 @@ require (
 require (
 	github.com/VividCortex/ewma v1.2.0 // indirect
 	github.com/cheggaaa/pb/v3 v3.1.7 // indirect
-	github.com/dosquad/go-cliversion v0.2.1 // indirect
+	github.com/dosquad/go-cliversion v0.3.0 // indirect
 	github.com/dosquad/go-giturl v0.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-resty/resty/v2 v2.16.5 // indirect
@@ -22,8 +22,8 @@ require (
 	github.com/princjef/mageutil v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
