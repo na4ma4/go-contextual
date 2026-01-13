@@ -3,7 +3,7 @@ module github.com/na4ma4/go-contextual/magefiles
 go 1.24.1
 
 require (
-	github.com/dosquad/mage v0.3.2
+	github.com/dosquad/mage v0.3.4
 	github.com/magefile/mage v1.15.0
 )
 
