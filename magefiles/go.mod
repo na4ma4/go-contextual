@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/dosquad/mage v0.3.4
-	github.com/magefile/mage v1.15.0
+	github.com/magefile/mage v1.16.0
 )
 
 require (
@@ -22,7 +22,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/na4ma4/go-permbits v0.5.3 // indirect
 	github.com/princjef/mageutil v1.0.0 // indirect
-	github.com/rivo/uniseg v0.4.7 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
