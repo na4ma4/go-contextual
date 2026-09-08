@@ -1,6 +1,6 @@
 module github.com/na4ma4/go-contextual/magefiles
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/dosquad/mage v0.5.1
