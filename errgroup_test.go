@@ -15,6 +15,8 @@ import (
 var errTest = errors.New("test error")
 
 func TestGo_FuncErr(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -43,6 +45,8 @@ func TestGo_FuncErr(t *testing.T) {
 }
 
 func TestGo_CtxErrFunc(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -77,6 +81,8 @@ func TestGo_CtxErrFunc(t *testing.T) {
 }
 
 func TestGo_CtxualErrFunc(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -113,6 +119,8 @@ func TestGo_CtxualErrFunc(t *testing.T) {
 }
 
 func TestGo_Cancellation(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 
 	var wg sync.WaitGroup
@@ -141,6 +149,8 @@ func TestGo_Cancellation(t *testing.T) {
 }
 
 func TestGoLabelled(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -191,6 +201,8 @@ func TestGoLabelled(t *testing.T) {
 }
 
 func TestGo_MultipleGoroutines(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -224,6 +236,8 @@ func TestGo_MultipleGoroutines(t *testing.T) {
 }
 
 func TestGo_ErrorCancelsOthers(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 
 	errEarly := errors.New("early error")
@@ -259,6 +273,8 @@ func TestGo_ErrorCancelsOthers(t *testing.T) {
 }
 
 func TestGo_CtxualErrFunc_WithValueAccess(t *testing.T) {
+	t.Parallel()
+
 	type key string
 	const myKey key = "testKey"
 	ctx := contextual.New(t.Context(), contextual.WithValues([]contextual.ContextKV{{Key: myKey, Value: "testValue"}}))
@@ -337,6 +353,8 @@ func TestGo_CtxualErrFunc_WithValueAccess(t *testing.T) {
 // }
 
 func TestGo_CtxErrFunc_ContextPropagation(t *testing.T) {
+	t.Parallel()
+
 	type key string
 	const baseKey key = "baseKey"
 	base := context.WithValue(t.Context(), baseKey, "baseValue")
@@ -377,6 +395,8 @@ func TestGo_CtxErrFunc_ContextPropagation(t *testing.T) {
 }
 
 func TestGo_CtxualErrFunc_ContextPropagation(t *testing.T) {
+	t.Parallel()
+
 	type key string
 	const myKey key = "myKey"
 	const myValue string = "myValue"
@@ -419,6 +439,8 @@ func TestGo_CtxualErrFunc_ContextPropagation(t *testing.T) {
 }
 
 func TestGoLabelled_CtxErrFunc_ContextPropagation(t *testing.T) {
+	t.Parallel()
+
 	type key string
 	const baseKey key = "baseKey"
 	base := context.WithValue(t.Context(), baseKey, "baseValue")
@@ -459,6 +481,8 @@ func TestGoLabelled_CtxErrFunc_ContextPropagation(t *testing.T) {
 }
 
 func TestGoLabelled_CtxualErrFunc_ContextPropagation(t *testing.T) {
+	t.Parallel()
+
 	type key string
 	const myKey key = "myKey"
 	const myValue string = "myValue"
@@ -501,6 +525,8 @@ func TestGoLabelled_CtxualErrFunc_ContextPropagation(t *testing.T) {
 }
 
 func TestGoDirectlyOnContext(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
