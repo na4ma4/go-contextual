@@ -10,6 +10,8 @@ import (
 )
 
 func TestContextOptionTimeout(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.NewCancellable(
 		t.Context(),
 		contextual.WithTimeoutOption(50*time.Millisecond),
@@ -24,6 +26,8 @@ func TestContextOptionTimeout(t *testing.T) {
 }
 
 func TestContextOptionDeadline(t *testing.T) {
+	t.Parallel()
+
 	deadline := time.Now().Add(50 * time.Millisecond)
 	ctx := contextual.New( // Using New for variety, NewCancellable also fine
 		t.Context(),
@@ -48,6 +52,8 @@ func TestContextOptionDeadline(t *testing.T) {
 }
 
 func TestContextOptionWithValues(t *testing.T) {
+	t.Parallel()
+
 	type valKey string
 	const k1 valKey = "key1"
 	const k2 valKey = "key2"
@@ -87,6 +93,8 @@ func TestContextOptionWithValues(t *testing.T) {
 }
 
 func TestContextOptionWithCustomCancelFunc(t *testing.T) {
+	t.Parallel()
+
 	var customCancelCalled bool
 	customFunc := func() {
 		customCancelCalled = true
@@ -110,6 +118,8 @@ func TestContextOptionWithCustomCancelFunc(t *testing.T) {
 }
 
 func TestContextOptionWithCustomCancelCauseFunc(t *testing.T) {
+	t.Parallel()
+
 	var customCancelCalled bool
 	var receivedCause error
 	testErr := errors.New("custom-cause-test")
@@ -157,6 +167,8 @@ func TestContextOptionWithCustomCancelCauseFunc(t *testing.T) {
 }
 
 func TestContextOptionWithPProfLabels(t *testing.T) {
+	t.Parallel()
+
 	// Basic test: does it create without error?
 	// Verifying actual label application is complex for unit tests.
 	ctx := contextual.New(
@@ -179,9 +191,13 @@ func TestContextOptionWithPProfLabels(t *testing.T) {
 }
 
 func TestContextOptionWithSignalCancel(t *testing.T) {
+	t.Parallel()
+
 	// Similar to TestContextWithSignalCancel, we test cancellation via context's own cancel
 	// and parent cancellation, not actual OS signals.
 	t.Run("option_self_cancel", func(t *testing.T) {
+		t.Parallel()
+
 		ctx := contextual.New(
 			t.Context(),
 			contextual.WithSignalCancelOption(), // Use default signals
@@ -204,6 +220,8 @@ func TestContextOptionWithSignalCancel(t *testing.T) {
 	})
 
 	t.Run("option_parent_cancel", func(t *testing.T) {
+		t.Parallel()
+
 		parent := contextual.New(t.Context())
 		// No defer parent.Cancel() here
 
@@ -230,6 +248,8 @@ func TestContextOptionWithSignalCancel(t *testing.T) {
 }
 
 func TestContextCancel(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.NewCancellable(t.Context())
 	if err := ctx.Err(); err != nil {
 		t.Errorf("ctx.Err(): immediate error : got '%s', want 'nil'", err)

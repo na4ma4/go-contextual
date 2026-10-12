@@ -13,9 +13,9 @@ type FuncErr func() error
 
 // CtxErrFunc defines a function signature for operations that can be run by an errgroup
 // and require a standard Go context.
-// It takes a context.Context as an argument and returns an error.
+// It takes a [context.Context] as an argument and returns an error.
 // Use this type for goroutines managed by `Go` or `GoLabelled` when the task needs
-// to be aware of cancellation or deadlines via a standard `context.Context`,
+// to be aware of cancellation or deadlines via a standard [context.Context],
 // but does not need the specific features of `contextual.Context`.
 type CtxErrFunc func(context.Context) error
 
@@ -79,7 +79,7 @@ func GoLabelled[T errgroupFuncs](ctx Context, name, description string, f T) {
 	ctx.GoLabelled(labelSet, wrappedF)
 }
 
-// CommonLabels is a utility function that creates a pprof.LabelSet with two labels:
+// CommonLabels is a utility function that creates a [pprof.LabelSet] with two labels:
 // "name" set to the provided `name` string, and "description" set to the `description` string.
 // This is a common pattern used for labeling goroutines for profiling.
 func CommonLabels(name, description string) pprof.LabelSet {
@@ -88,7 +88,7 @@ func CommonLabels(name, description string) pprof.LabelSet {
 
 // Labels is a convenience wrapper around `pprof.Labels`.
 // Example: Labels("key1", "value1", "key2", "value2")
-// It takes a variadic list of strings `args` (key-value pairs) and returns a pprof.LabelSet.
+// It takes a variadic list of strings `args` (key-value pairs) and returns a [pprof.LabelSet].
 // This allows for creating custom label sets with more or different labels than CommonLabels.
 func Labels(args ...string) pprof.LabelSet {
 	return pprof.Labels(args...)

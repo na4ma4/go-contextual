@@ -11,6 +11,8 @@ import (
 )
 
 func TestBackground(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.Background()
 	defer ctx.Cancel()
 
@@ -30,6 +32,8 @@ func TestBackground(t *testing.T) {
 }
 
 func TestContextCancelWithCauseMethod(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	// No defer ctx.Cancel() here, we are testing specific cancel with cause
 
@@ -78,6 +82,8 @@ func TestContextCancelWithCauseMethod(t *testing.T) {
 }
 
 func TestContextCloneWithNewContext(t *testing.T) {
+	t.Parallel()
+
 	// Setup parent context with a value
 	type cloneKey string
 	const ck cloneKey = "cloneTestKey"
@@ -200,6 +206,8 @@ func TestContextCloneWithNewContext(t *testing.T) {
 }
 
 func TestContextConditionalRunner(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -261,6 +269,8 @@ func TestContextConditionalRunner(t *testing.T) {
 }
 
 func TestContextValueStore(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.New(t.Context())
 	defer ctx.Cancel()
 
@@ -372,6 +382,8 @@ func TestContextValueStore(t *testing.T) {
 }
 
 func TestAllowNilNewCancellable(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.NewCancellable(nil) //nolint:staticcheck // testing bad juju.
 	if ctx == nil {
 		t.Fatal("context should return valid text")
@@ -394,6 +406,8 @@ func TestAllowNilNewCancellable(t *testing.T) {
 }
 
 func TestReplaceContext(t *testing.T) {
+	t.Parallel()
+
 	ctx := contextual.Background()
 	defer ctx.Cancel()
 

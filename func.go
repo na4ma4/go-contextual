@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// WithTimeout returns WithDeadline(parent, time.Now().Add(timeout)).
+// WithTimeout returns WithDeadline(parent, [time.Now]().Add(timeout)).
 //
 // Canceling this context releases resources associated with it, so code should
 // call cancel as soon as the operations running in this [Context] complete:
@@ -88,10 +88,10 @@ func WithCancelCause(ctx Context) (Context, context.CancelCauseFunc) {
 // when the returned stop function is called, or when the parent context's
 // Done channel is closed, whichever happens first.
 //
-// The stop function unregisters the signal behavior, which, like signal.Reset,
+// The stop function unregisters the signal behavior, which, like [signal.Reset],
 // may restore the default behavior for a given signal. For example, the default
-// behavior of a Go program receiving os.Interrupt is to exit. Calling
-// NotifyContext(parent, os.Interrupt) will change the behavior to cancel
+// behavior of a Go program receiving [os.Interrupt] is to exit. Calling
+// NotifyContext(parent, [os.Interrupt]) will change the behavior to cancel
 // the returned context. Future interrupts received will not trigger the default
 // (exit) behavior until the returned stop function is called.
 //
