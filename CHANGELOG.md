@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/na4ma4/go-contextual/compare/v0.3.0...v0.3.1) (2026-10-12)
+
+
+### Bug Fixes
+
+* remove go.work and magefiles, add new magefile.go, and update tests for parallel execution ([5996987](https://github.com/na4ma4/go-contextual/commit/599698709b4a88d6a76a1297e9e869d117553d72))
+
 ## 0.3.0 (2026-01-27)
 
 
